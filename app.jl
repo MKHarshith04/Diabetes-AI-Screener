@@ -10,7 +10,15 @@ import MLJ: predict, pdf
 println("--- Starting Server Boot Sequence ---")
 
 # 1. LOAD THE AI'S BRAIN
+const model_url = "https://github.com/MKHarshith04/Diabetes-AI-Screener/releases/download/v1.0/diabetes_rf_model.jls"
 const model_path = joinpath(@__DIR__, "diabetes_rf_model.jls")
+
+# If the cloud server doesn't have the file, download it directly from your GitHub Release!
+if !isfile(model_path)
+    println("☁️ Downloading heavy AI model from GitHub Releases...")
+    download(model_url, model_path)
+end
+
 println("Loading AI Model from: ", model_path)
 const mach_forest = machine(model_path)
 println("--- Model Loaded Successfully! ---")
@@ -22,7 +30,7 @@ const form_html = """
 <head>
     <title>Diabetes AI</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; margin: 0; padding: 40px 0; }
         .container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 400px; }
         h2 { color: #d35400; text-align: center; margin-bottom: 20px;}
         label { font-weight: bold; margin-top: 10px; display: block; color: #333;}
@@ -42,11 +50,20 @@ const form_html = """
             <label>Patient BMI</label>
             <input type="number" step="0.1" name="bmi" required value="{{BMI_VAL}}">
 
-            <label>Age Category (1-13)</label>
+            <label>Age Category</label>
             <select name="age">
                 <option value="1" {{AGE_1}}>18 to 24</option>
+                <option value="2" {{AGE_2}}>25 to 29</option>
+                <option value="3" {{AGE_3}}>30 to 34</option>
+                <option value="4" {{AGE_4}}>35 to 39</option>
                 <option value="5" {{AGE_5}}>40 to 44</option>
+                <option value="6" {{AGE_6}}>45 to 49</option>
+                <option value="7" {{AGE_7}}>50 to 54</option>
+                <option value="8" {{AGE_8}}>55 to 59</option>
                 <option value="9" {{AGE_9}}>60 to 64</option>
+                <option value="10" {{AGE_10}}>65 to 69</option>
+                <option value="11" {{AGE_11}}>70 to 74</option>
+                <option value="12" {{AGE_12}}>75 to 79</option>
                 <option value="13" {{AGE_13}}>80 or older</option>
             </select>
 
@@ -122,7 +139,7 @@ route("/predict", method = POST) do
             xai_dashboard = """
                 <hr style="border: 0; border-top: 1px solid #e74c3c; margin: 20px 0;">
                 <p style="color: #c0392b; font-size: 15px; margin-bottom: 5px;"><b>🔍 AI Decision Logic</b></p>
-                <p style="color: #333; font-size: 13px; font-weight: normal; margin-top: 0;">Top factors driving this patient's risk profile:</p>
+                <p style="color: #333; font-size: 13px; font-weight: normal; margin-top: 0;">Top clinical factors this AI model uses to evaluate risk:</p>
                 <img src="data:image/png;base64,$img_b64" style="width: 100%; border-radius: 5px; background: white; padding: 5px; box-sizing: border-box;">
             """
         else
